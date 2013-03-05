@@ -13,8 +13,6 @@
  * @version 1.0
  */
 
-
-
 // start session to save prices
 if('' == session_id())
 	session_start();
@@ -128,6 +126,7 @@ function dump_data($var, $data_type = false)
 		<label>Transfers/Buy: <input type="text" readonly="readonly" data-cur="aud" data-method="buy_transfer" /></label>
 		<label>Transfers/Sell: <input type="text" readonly="readonly" data-cur="aud" data-method="sell_transfer" /></label>
 	</div>
-	<p class="note">Info updated every 5 minutes</p>
+	<p class="note">Note: Info updated every 5 minutes</p>
+	<p class="note fork"><a href="https://github.com/N-Molham/currency_exchange">If you like it, Fork on GitHub &crarr;</a></p>
 </body>
 </html>
