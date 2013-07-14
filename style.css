@@ -79,6 +79,24 @@ input[type=text], input[type=number] {
 	font-size: 16px;
 }
 
+.fork {
+	display: block;
+	padding: 0;
+	position: fixed; 
+	top: 0;
+	right: 0;
+	border: 0;
+	width: auto;
+}
+
+.fork:hover {
+	background: none;
+}
+
+.fork img {
+	vertical-align: middle;
+}
+
 @media only screen and (max-width: 800px) {
 	.results label {
 		width: 50%;

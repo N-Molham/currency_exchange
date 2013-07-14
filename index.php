@@ -127,6 +127,8 @@ function dump_data($var, $data_type = false)
 		<label>Transfers/Sell: <input type="text" readonly="readonly" data-cur="aud" data-method="sell_transfer" /></label>
 	</div>
 	<p class="note">Note: Info updated every 5 minutes</p>
-	<p class="note fork"><a href="https://github.com/N-Molham/currency_exchange">If you like it, Fork on GitHub &crarr;</a></p>
+	<a href="https://github.com/N-Molham/currency_exchange" class="fork">
+		<img src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub">
+	</a>
 </body>
 </html>
