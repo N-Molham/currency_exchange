@@ -1,23 +1,25 @@
 (function(window){
 	// jQuery document ready
-	jQuery(function($){
+	jQuery( function($) {
 		// results fields objects
 		var $fields = $('.results input');
 		// listen for keyup and change events on amount field
-		$('#amount').bind('keyup change', function(e){
+		$('#amount').bind('keyup change', function(e) {
 			// the amount
 			var amount = parseFloat(e.target.value);
 			// if not a number make it 1
-			if(isNaN(amount))
+			if( isNaN(amount) ) {
 				amount = 1;
+			}
 			// loop results 
-			$fields.each(function(index, element){
+			$fields.each( function(index, element) {
 				var $this = $(this),
-				result_amount = 0;
-				if(element.dataset) {
+					result_amount = 0;
+
+				if( element.dataset ) {
 					// JS modern browsers way
 					result_amount = amount * prices[element.dataset.cur][element.dataset.method];
-				} else if($this.data) {
+				} else if( $this.data ) {
 					// jQuery modern way
 					result_amount = amount * prices[$this.data('cur')][$this.data('method')];
 				} else {
@@ -31,13 +33,14 @@
 	});
 	
 	// round result number to 4 decimals
-	window.round_number = function(num) {
+	window.round_number = function( num ) {
 		return Math.round(num * 10000) / 10000;
 	};
 	
 	// console log if found
-	window.trace = function(any) {
-		if(window.console && console.log)
+	window.trace = function( any ) {
+		if( window.console && console.log ) {
 			console.log(any);
+		}
 	};
 })(window); // self-executable anonymous function
