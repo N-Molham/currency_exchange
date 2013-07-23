@@ -26,12 +26,17 @@ if ( !isset($_SESSION['nbe_time']) )
 
 // get NBE table
 $time = time();
-if ( !isset($_SESSION['nbe_html']) || $time > $_SESSION['nbe_time'] )
+if ( !isset($_SESSION['nbe_html']) || $time > $_SESSION['nbe_time'] || isset( $_REQUEST['force_reload'] ) )
 {
 	// 5 min timegap
 	$_SESSION['nbe_time'] = $time + 300;
 	// get NBE page html content
-	$_SESSION['nbe_html'] = file_get_contents('http://www.nbe.com.eg/exchangerate.aspx');
+	$_SESSION['nbe_html'] = @file_get_contents('http://www.nbe.com.eg/exchangerate.aspx');
+	if ( false === $_SESSION['nbe_html'] )
+	{
+		// display error if network error happened
+		die( '<h1>Connection Error</h1>' );
+	}
 }
 
 // init phpQuery
@@ -45,11 +50,11 @@ $prices = array (
 		), // USD selectors
 		'eur' => array (
 			'title' => 'EURO',
-			'selector' => 'tr:eq(1) td:gt(2) input',
+			'selector' => 'tr:eq(2) td:gt(2) input',
 		), // EUR selectors
 		'aud' => array (
 			'title' => 'AUSTRALIAN DOLLAR',
-			'selector' => 'tr:eq(1) td:gt(2) input',
+			'selector' => 'tr:eq(10) td:gt(2) input',
 		), // AUD selectors
 );
 
@@ -64,10 +69,21 @@ foreach ($prices as $key => $args)
 {
 	// phpQuery selectors
 	$els = $table->find( $args['selector'] );
-	$prices[$key]['buy'] = floatval( $els->get(0)->getAttribute('value') );
-	$prices[$key]['sell'] = floatval( $els->get(1)->getAttribute('value') );
-	$prices[$key]['buy_transfer'] = floatval( $els->get(2)->getAttribute('value') );
-	$prices[$key]['sell_transfer'] = floatval( $els->get(3)->getAttribute('value') );
+
+	// check match length
+	if ( $els->length() )
+	{
+		// match found
+		$prices[$key]['buy'] = floatval( $els->get(0)->getAttribute('value') );
+		$prices[$key]['sell'] = floatval( $els->get(1)->getAttribute('value') );
+		$prices[$key]['buy_transfer'] = floatval( $els->get(2)->getAttribute('value') );
+		$prices[$key]['sell_transfer'] = floatval( $els->get(3)->getAttribute('value') );
+	}
+	else
+	{
+		// not match found
+		$prices[$key]['buy'] = $prices[$key]['sell'] = $prices[$key]['buy_transfer'] = $prices[$key]['sell_transfer'] = 0;
+	}
 }
 
 /**
