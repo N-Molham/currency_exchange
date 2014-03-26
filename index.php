@@ -14,19 +14,24 @@
  */
 
 // start session to save prices
-if('' == session_id())
+if ( '' == session_id() )
 	session_start();
 
 // require phpQuery
-require dirname(__FILE__) . DIRECTORY_SEPARATOR . 'phpQuery-onefile.php';
+require dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'phpQuery-onefile.php';
 
 // update timegap setup
-if ( !isset($_SESSION['nbe_time']) )
+if ( !isset( $_SESSION['nbe_time'] ) )
 	$_SESSION['nbe_time'] = 0;
+
+// init convert amount
+$init_amount = filter_input( INPUT_GET, 'amount', FILTER_SANITIZE_NUMBER_FLOAT );
+if ( !$init_amount )
+	$init_amount = 1;
 
 // get NBE table
 $time = time();
-if ( !isset($_SESSION['nbe_html']) || $time > $_SESSION['nbe_time'] || isset( $_REQUEST['force_reload'] ) )
+if ( !isset( $_SESSION['nbe_html'] ) || $time > $_SESSION['nbe_time'] || isset( $_REQUEST['force_reload'] ) )
 {
 	// 5 min timegap
 	$_SESSION['nbe_time'] = $time + 300;
@@ -59,13 +64,13 @@ $prices = array (
 );
 
 // phpQuery prices table
-$table = pq('#dgPrices');
+$table = pq( '#dgPrices' );
 
 // selectors holder
 $els = null;
 
 // prices values loop
-foreach ($prices as $key => $args) 
+foreach ( $prices as $key => $args ) 
 {
 	// phpQuery selectors
 	$els = $table->find( $args['selector'] );
@@ -115,12 +120,12 @@ function dump_data( $var, $data_type = false )
 
 	<!-- Target Amount -->
 	<h2>Amount</h2>
-	<input type="number" value="1" id="amount" />
+	<input type="number" value="<?php echo (float) $init_amount; ?>" id="amount" />
 
 	<!-- Convert Results -->
 	<?php
 	// prices layouts loop
-	foreach ($prices as $key => $args) 
+	foreach ( $prices as $key => $args ) 
 	{
 		echo '<h2>', $args['title'] ,'</h2>';
 		echo '<div class="results">';
@@ -139,10 +144,10 @@ function dump_data( $var, $data_type = false )
 
 	<!-- JS code -->
 	<script>
-	(function(window){
+	( function( window ) {
 		// export prices to js JSON format ( JS Object )
 		window.prices = <?php echo json_encode($prices); ?>;
-	})(window); // self-executable anonymous function
+	} )( window ); // self-executable anonymous function
 	</script>
 	<script src="script.js"></script>
 </body>
