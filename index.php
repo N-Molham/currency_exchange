@@ -35,8 +35,9 @@ if ( !isset( $_SESSION['nbe_html'] ) || $time > $_SESSION['nbe_time'] || isset( 
 {
 	// 5 min timegap
 	$_SESSION['nbe_time'] = $time + 300;
+
 	// get NBE page html content
-	$_SESSION['nbe_html'] = @file_get_contents('http://www.nbe.com.eg/exchangerate.aspx');
+	$_SESSION['nbe_html'] = @file_get_contents( 'http://www.nbe.com.eg/exchangerate.aspx' );
 	if ( false === $_SESSION['nbe_html'] )
 	{
 		// display error if network error happened
@@ -51,14 +52,17 @@ phpQuery::newDocumentHTML( $_SESSION['nbe_html'], 'windows-1256' );
 $prices = array (
 		'usd' => array (
 			'title' => 'US DOLLAR',
+			'unit' => '$',
 			'selector' => 'tr:eq(1) td:gt(2) input',
 		), // USD selectors
 		'eur' => array (
 			'title' => 'EURO',
+			'unit' => '&#128;',
 			'selector' => 'tr:eq(2) td:gt(2) input',
 		), // EUR selectors
 		'aud' => array (
 			'title' => 'AUSTRALIAN DOLLAR',
+			'unit' => 'AU$',
 			'selector' => 'tr:eq(10) td:gt(2) input',
 		), // AUD selectors
 );
@@ -100,7 +104,7 @@ foreach ( $prices as $key => $args )
 function dump_data( $var, $data_type = false )
 {
 	echo '<pre style="color:#000;direction:ltr;text-align:left;background:#fff;padding:5px;">';
-	$data_type ? var_dump($var) : print_r($var);
+	$data_type ? var_dump( $var ) : print_r( $var );
 	echo '</pre>';
 }
 
@@ -111,7 +115,6 @@ function dump_data( $var, $data_type = false )
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
 	<title>NBE Currency Exchange for Egyptian Pound(EGP)</title>
 	<link rel="stylesheet" type="text/css" href="style.css" media="all" />
-	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 </head>
 <body>
 	<header>
@@ -119,7 +122,7 @@ function dump_data( $var, $data_type = false )
 	</header>
 
 	<!-- Target Amount -->
-	<h2>Amount</h2>
+	<h2>Foreign Currency Amount</h2>
 	<input type="number" value="<?php echo (float) $init_amount; ?>" id="amount" />
 
 	<!-- Convert Results -->
@@ -127,12 +130,12 @@ function dump_data( $var, $data_type = false )
 	// prices layouts loop
 	foreach ( $prices as $key => $args ) 
 	{
-		echo '<h2>', $args['title'] ,'</h2>';
+		echo '<h2 class="currency-title" data-cur="', $key ,'">', $args['title'] ,': <span></span></h2>';
 		echo '<div class="results">';
-		echo '<label>Buy: <input type="text" readonly="readonly" data-cur="', $key ,'" data-method="buy" /></label>';
-		echo '<label>Sell: <input type="text" readonly="readonly" data-cur="', $key ,'" data-method="sell" /></label>';
-		echo '<label>Transfers/Buy: <input type="text" readonly="readonly" data-cur="', $key ,'" data-method="buy_transfer" /></label>';
-		echo '<label>Transfers/Sell: <input type="text" readonly="readonly" data-cur="', $key ,'" data-method="sell_transfer" /></label></div>';
+		echo '<label>Buy: <input type="text" readonly data-cur="', $key ,'" data-method="buy" /></label>';
+		echo '<label>Sell: <input type="text" readonly data-cur="', $key ,'" data-method="sell" /></label>';
+		echo '<label>Transfers/Buy: <input type="text" readonly data-cur="', $key ,'" data-method="buy_transfer" /></label>';
+		echo '<label>Transfers/Sell: <input type="text" readonly data-cur="', $key ,'" data-method="sell_transfer" /></label></div>';
 	}
 	?>
 
@@ -144,11 +147,10 @@ function dump_data( $var, $data_type = false )
 
 	<!-- JS code -->
 	<script>
-	( function( window ) {
-		// export prices to js JSON format ( JS Object )
-		window.prices = <?php echo json_encode($prices); ?>;
-	} )( window ); // self-executable anonymous function
+	// export prices to js JSON format ( JS Object )
+	var prices = <?php echo json_encode( $prices ); ?>;
 	</script>
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<script src="script.js"></script>
 </body>
 </html>
