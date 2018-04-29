@@ -13,48 +13,64 @@
  * @version 1.0
  **/
 
-if ( '' == session_id() )
-{
+if ( '' === session_id() ) {
 	// start session to save prices
 	session_start();
 }
 
 // composer packages
-require_once dirname( __FILE__ ) . '/vendor/autoload.php';
-
-if ( !isset( $_SESSION['nbe_time'] ) )
-{
-	// update time gap setup
-	$_SESSION['nbe_time'] = 0;
-}
+require_once __DIR__ . '/vendor/autoload.php';
 
 $init_amount = filter_input( INPUT_GET, 'amount', FILTER_SANITIZE_NUMBER_FLOAT );
-if ( !$init_amount )
-{
+if ( ! $init_amount ) {
 	// init convert amount
 	$init_amount = 1;
 }
 
-// get NBE table
-$time = time();
-if ( !isset( $_SESSION['nbe_html'] ) || $time > $_SESSION['nbe_time'] || isset( $_REQUEST['force_reload'] ) )
-{
-	// 5 min timegap
-	$_SESSION['nbe_time'] = $time + 300;
+$current_time = time();
+$page_data = nbe_load_html( 'nbe.temp', $current_time );
 
-	// get NBE page html content
-	$_SESSION['nbe_html'] = @file_get_contents( 'http://www.nbe.com.eg/en/exchangerate.aspx' );
-	if ( false === $_SESSION['nbe_html'] )
-	{
-		// display error if network error happened
-		die( '<h1>Connection Error</h1>' );
+/**
+ * @param string $file_name
+ * @param int    $current_time
+ * @param int    $cache_duration
+ *
+ * @return array
+ */
+function nbe_load_html( $file_name, $current_time, $cache_duration = 3600 ) {
+
+	if ( file_exists( $file_name ) && is_readable( $file_name ) ) {
+
+		$data = json_decode( file_get_contents( $file_name ), true );
+
+		if ( is_array( $data ) && $data['time'] + $cache_duration > $current_time ) {
+
+			return $data;
+
+		}
+
 	}
+
+	$data = [
+		'time' => time(),
+		'html' => file_get_contents( 'http://www.nbe.com.eg/en/ExchangeRate.aspx' ),
+	];
+
+	if ( empty( $data['html'] ) ) {
+
+		// display error if network error happened
+		die( '<h1>Unable ot load data from NBE website!</h1>' );
+
+	}
+
+	file_put_contents( $file_name, json_encode( $data ) );
+
+	return $data;
 }
 
 // init phpQuery
-$dom = pQuery::parseStr( $_SESSION['nbe_html'] );
+$dom = pQuery::parseStr( $page_data['html'] );
 
-// prices array
 $prices = [
 	'usd' => [
 		'title'    => 'US DOLLAR',
@@ -92,19 +108,21 @@ $prices = [
 $els = null;
 
 // prices values loop
-foreach ( $prices as $key => $args )
-{
+foreach ( $prices as $currency_code => $args ) {
+
 	// unit code
-	$prices[ $key ]['code'] = trim( $dom->query( $args['code'] )->text() );
+	$prices[ $currency_code ]['code'] = trim( $dom->query( $args['code'] )->text() );
 
 	// rates
-	foreach ( $args['selector'] as $selector_name => $selector_query )
-	{
+	foreach ( $args['selector'] as $selector_name => $selector_query ) {
+
 		// query selectors
-		$selector_val                     = trim( $dom->query( $selector_query )->text() );
-		$prices[ $key ][ $selector_name ] = empty( $selector_val ) ? 0 : floatval( $selector_val );
+		$selector_val = trim( $dom->query( $selector_query )->text() );
+
+		$prices[ $currency_code ][ $selector_name ] = empty( $selector_val ) ? 0 : (float) $selector_val;
+
 	}
-	unset( $selector_name, $selector_query, $selector_val );
+
 }
 
 ?><!DOCTYPE html>
@@ -127,14 +145,13 @@ foreach ( $prices as $key => $args )
 <!-- Convert Results -->
 <?php
 // prices layouts loop
-foreach ( $prices as $key => $args )
-{
-	echo '<h2 class="currency-title" data-cur="', $key, '">', $args['title'], ': <span></span></h2>';
+foreach ( $prices as $currency_code => $args ) {
+	echo '<h2 class="currency-title" data-cur="', $currency_code, '">', $args['title'], ': <span></span></h2>';
 	echo '<div class="results">';
-	echo '<label>Buy: <input type="text" readonly data-cur="', $key, '" data-method="buy" /></label>';
-	echo '<label>Sell: <input type="text" readonly data-cur="', $key, '" data-method="sell" /></label>';
-	echo '<label>Transfers/Buy: <input type="text" readonly data-cur="', $key, '" data-method="buy_transfer" /></label>';
-	echo '<label>Transfers/Sell: <input type="text" readonly data-cur="', $key, '" data-method="sell_transfer" /></label></div>';
+	echo '<label>Buy: <input type="text" readonly data-cur="', $currency_code, '" data-method="buy" /></label>';
+	echo '<label>Sell: <input type="text" readonly data-cur="', $currency_code, '" data-method="sell" /></label>';
+	echo '<label>Transfers/Buy: <input type="text" readonly data-cur="', $currency_code, '" data-method="buy_transfer" /></label>';
+	echo '<label>Transfers/Sell: <input type="text" readonly data-cur="', $currency_code, '" data-method="sell_transfer" /></label></div>';
 }
 ?>
 
