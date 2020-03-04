@@ -83,7 +83,7 @@ input[type=text], input[type=number] {
 .fork {
 	display: block;
 	padding: 0;
-	position: fixed; 
+	position: fixed;
 	top: 0;
 	right: 0;
 	border: 0;
