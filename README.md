@@ -2,7 +2,6 @@
 =============================================
 
 A way to read currencies' prices from National Bank of Egypt website.
-Using phpQuery to parse html content of the exchangerate page to get values.
 Hope you find it helpful :)
 
 Demo: http://nabeel.molham.me/currency_exchange/
